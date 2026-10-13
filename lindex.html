@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>PHE</title>
+<style>
+  :root{--bg:#0e1116;--card:#181d26;--accent:#2f7bff;--text:#eef1f6;--muted:#8d97a8;--line:#262d3a}
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Noto Sans Bengali",sans-serif}
+  body{overflow-x:hidden}
+  body.locked{overflow:hidden;touch-action:none;position:fixed;width:100%}
+  .hidden{display:none!important}
+
+  /* ===== HOME (সাধারণ সাইটের মতো) ===== */
+  header{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;height:58px;padding:0 18px;background:rgba(14,17,22,.95);border-bottom:1px solid var(--line)}
+  .brand{font-size:1.35rem;font-weight:800;letter-spacing:.04em}
+  #burger{width:42px;height:42px;border:0;background:none;display:grid;place-content:center;gap:5px}
+  #burger i{display:block;width:24px;height:2.5px;background:var(--text);border-radius:2px}
+  #menu{position:fixed;top:58px;right:0;left:0;z-index:19;background:var(--card);border-bottom:1px solid var(--line);padding:6px 18px 14px}
+  #menu a{display:block;padding:13px 0;color:var(--text);text-decoration:none;border-bottom:1px solid var(--line)}
+  #menu a:last-child{border:0}
+  .hero{min-height:calc(100vh - 58px);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px 22px}
+  .hero h1{font-size:2rem;line-height:1.2;letter-spacing:-.02em;margin-bottom:10px}
+  .hero p.lead{color:var(--muted);max-width:420px;margin-bottom:28px;line-height:1.55}
+  #go{padding:15px 38px;border:0;border-radius:12px;background:var(--accent);color:#fff;font-size:1.05rem;font-weight:700}
+  #go:active{transform:scale(.97)}
+  .desc{margin-top:16px;max-width:380px;padding:13px 16px;border-radius:12px;background:var(--card);color:var(--muted);font-size:.88rem;line-height:1.5}
+
+  /* ===== PRANK পেজ (ভিডিও সাইটের মতো) ===== */
+  .wrap{max-width:560px;margin:0 auto;padding:22px 18px 60px}
+  .wrap h2{font-size:1.5rem;margin-bottom:14px}
+  .grid{display:grid;gap:14px}
+  .thumb{position:relative;aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:#222 center/cover no-repeat}
+  .thumb::after{content:"";position:absolute;inset:0;background:linear-gradient(transparent 55%,rgba(0,0,0,.7))}
+  .play{position:absolute;left:50%;top:50%;width:54px;height:54px;margin:-27px;border-radius:50%;background:rgba(0,0,0,.55);z-index:2}
+  .play::before{content:"";position:absolute;left:21px;top:16px;border-left:16px solid #fff;border-top:11px solid transparent;border-bottom:11px solid transparent}
+  .dur{position:absolute;right:10px;bottom:8px;z-index:2;font-size:.78rem;background:rgba(0,0,0,.7);padding:2px 7px;border-radius:6px}
+
+  #fx{position:fixed;inset:0;z-index:50;pointer-events:none;display:none}
+  #catch{position:fixed;inset:0;z-index:60;display:none}
+  body.glitch #fx,body.glitch #catch{display:block}
+  body.glitch .wrap{animation:shake .35s steps(2) infinite}
+  body.glitch .grid .thumb:nth-child(2){animation:lagjump 1.3s steps(1) infinite}
+  @keyframes shake{
+    0%{transform:translate(0,0)}
+    25%{transform:translate(calc(-6px*var(--amp,1)),calc(3px*var(--amp,1))) skewX(calc(1deg*var(--amp,1)))}
+    50%{transform:translate(calc(5px*var(--amp,1)),calc(-4px*var(--amp,1)))}
+    75%{transform:translate(calc(-3px*var(--amp,1)),calc(-2px*var(--amp,1))) skewX(calc(-1.5deg*var(--amp,1)))}
+    100%{transform:translate(calc(2px*var(--amp,1)),calc(4px*var(--amp,1)))}}
+  #gl{position:fixed;inset:0;width:100%;height:100%;z-index:45;pointer-events:none;display:none}
+  #crack{position:fixed;inset:0;width:100%;height:100%;z-index:55;pointer-events:none;display:none}
+  body.glitch #gl{display:block;opacity:.5;mix-blend-mode:screen}
+  body.glitch #crack{display:block}
+  @keyframes lagjump{0%{transform:translateY(0)}30%{transform:translateY(-8px)}31%{transform:translateY(5px)}60%{transform:translateY(0)}}
+  body.glitch.dim .wrap{filter:brightness(.55) hue-rotate(40deg)}
+  body.glitch.rgb .wrap{filter:drop-shadow(4px 0 0 rgba(255,0,60,.7)) drop-shadow(-4px 0 0 rgba(0,255,120,.7))}
+
+  body.glitch.hue .wrap{filter:hue-rotate(140deg) saturate(3)}
+  body.glitch.blur .wrap{filter:blur(3px) brightness(.8)}
+  body.glitch.flip .wrap{animation:none;transform:scaleY(-1) skewX(4deg)}
+  #exit{position:fixed;left:0;top:0;width:70px;height:70px;z-index:100}
+  #reveal{position:fixed;inset:0;z-index:200;background:#0e1116;display:none;place-items:center;text-align:center;padding:24px}
+  #reveal h2{font-size:2.4rem;margin-bottom:10px}
+  #reveal p{color:var(--muted)}
+</style>
+</head>
+<body>
+
+<!-- ============ HOME ============ -->
+<div id="home">
+  <header>
+    <span class="brand" id="brand"></span>
+    <button id="burger" aria-label="Menu"><i></i><i></i><i></i></button>
+  </header>
+  <nav id="menu" class="hidden"></nav>
+  <section class="hero">
+    <h1 id="hTitle"></h1>
+    <p class="lead" id="hLead"></p>
+    <button id="go"></button>
+    <div class="desc" id="desc"></div>
+  </section>
+</div>
+
+<!-- ============ PRANK ============ -->
+<div id="prank" class="hidden">
+  <div class="wrap">
+    <h2 id="pTitle"></h2>
+    <div class="grid" id="grid"></div>
+  </div>
+</div>
+
+<canvas id="gl"></canvas>
+<canvas id="fx"></canvas>
+<canvas id="crack"></canvas>
+<div id="catch"></div>
+<div id="exit" class="hidden"></div>
+<div id="reveal"><div><h2 id="rt"></h2><p id="rp"></p></div></div>
+
+<script>
+/* =====================================================
+   ✏️  এখানে সব এডিট করো (EDIT HERE)
+   ===================================================== */
+const CONFIG = {
+  // --- হোম পেজ (সাধারণ সাইটের মতো) ---
+  SITE_NAME:    "PHE",                          // ✏️ উপরের বাঁ দিকে সাইটের নাম
+  MENU_ITEMS:   ["Home", "About", "Services", "Contact"],  // ✏️ তিন-দাগ মেনুর লেখা
+  HOME_TITLE:   "Welcome to PHE",               // ✏️ হোমের বড় লেখা
+  HOME_LEAD:    "Your trusted place for everything you need.", // ✏️ হোমের ছোট লেখা
+  BUTTON_TEXT:  "Get Started",                  // ✏️ মাঝখানের বাটনে যা লেখা থাকবে
+  DESCRIPTION:  "Tap the button above to continue to your content.", // ✏️ বাটনের নিচের ছোট বক্সের লেখা
+
+  // --- প্র্যাঙ্ক পেজ ---
+  PRANK_TITLE:  "Trending Videos",              // ✏️ প্র্যাঙ্ক পেজের হেডলাইন
+  IMAGES: [                                     // ✏️ ছবির path (২-৩টা)
+    "img1.jpg",
+    "IMAGE_PATH_2.jpg",
+    "IMAGE_PATH_3.jpg"
+  ],
+  DURATIONS: ["12:41", "08:15", "21:03"],
+  AUDIOS: [                                     // ✏️ ৪টা অডিও: path আর কত সেকেন্ড পর পর repeat হবে
+    { path: "audio1.mp3", every: 1   },
+    { path: "audio2.mp3", every: 1.6 },
+    { path: "audio3.mp3", every: 2   },
+    { path: "audio4.mp3", every: 2.4 }
+  ],
+
+  // --- সেটিং ---
+  SHADER_ENABLED: true,   // ব্যাকগ্রাউন্ডে ভারী 3D ভলিউম শেডার (ফোন সত্যিই ল্যাগ করবে)
+  MAX_LAG_LEVEL: 40,      // যত ক্লিক/স্ক্রলে ল্যাগ বাড়বে তার সীমা (বেশি = ফোন বেশি গরম/ধীর)
+  VOLUME: 0.8,         // 0 থেকে 1
+
+  // --- গোপন বের হওয়ার পথ ---
+  // প্র্যাঙ্ক পেজে উপরের-বাম কোণায় EXIT_TAPS বার দ্রুত ট্যাপ করলে সব বন্ধ হবে
+  EXIT_TAPS: 7,
+  REVEAL_TITLE: "প্র্যাঙ্ক! 😄",
+  REVEAL_TEXT:  "তোমার ফোন ঠিকই আছে, চিন্তা কোরো না।"
+};
+
+/* =====================================================
+   নিচের কোড না ছুঁলেও চলবে
+   ===================================================== */
+const $ = id => document.getElementById(id);
+document.title = CONFIG.SITE_NAME;
+$("brand").textContent = CONFIG.SITE_NAME;
+$("hTitle").textContent = CONFIG.HOME_TITLE;
+$("hLead").textContent = CONFIG.HOME_LEAD;
+$("go").textContent = CONFIG.BUTTON_TEXT;
+$("desc").textContent = CONFIG.DESCRIPTION;
+$("pTitle").textContent = CONFIG.PRANK_TITLE;
+$("rt").textContent = CONFIG.REVEAL_TITLE;
+$("rp").textContent = CONFIG.REVEAL_TEXT;
+
+CONFIG.MENU_ITEMS.forEach(n => {
+  const a = document.createElement("a"); a.href = "#"; a.textContent = n;
+  a.onclick = e => { e.preventDefault(); $("menu").classList.add("hidden"); };
+  $("menu").appendChild(a);
+});
+$("burger").onclick = () => $("menu").classList.toggle("hidden");
+
+CONFIG.IMAGES.forEach((src, i) => {
+  const t = document.createElement("div");
+  t.className = "thumb";
+  t.style.backgroundImage = `url("${src}")`;
+  t.innerHTML = `<div class="play"></div><span class="dur">${CONFIG.DURATIONS[i] || "05:00"}</span>`;
+  $("grid").appendChild(t);
+});
+
+/* ---- অডিও ---- */
+const sounds = [], timers = [];
+function addSound(){
+  if (sounds.length) return;          // ৪টা অডিও একবারই চালু হবে
+  CONFIG.AUDIOS.forEach(({path, every}) => {
+    const a = new Audio(path);
+    a.loop = false; a.volume = CONFIG.VOLUME; a.preload = "auto";
+    const restart = () => { if (exiting) return; try { a.currentTime = 0; } catch(e){} a.play().catch(()=>{}); };
+    restart();
+    timers.push(setInterval(restart, every * 1000));   // every সেকেন্ড পর পর আবার শুরু
+    // কোনোভাবে থেমে গেলে (শেষ হয়ে যাওয়া বাদে) সঙ্গে সঙ্গে আবার চালু
+    a.addEventListener("pause", () => { if (!exiting && !a.ended) setTimeout(() => a.play().catch(()=>{}), 30); });
+    a.addEventListener("error", () => { if (!exiting) { a.load(); a.play().catch(()=>{}); } });
+    sounds.push(a);
+  });
+}
+let exiting = false;
+function stopAll(){ exiting = true; timers.forEach(clearInterval); timers.length = 0; sounds.forEach(a => { a.pause(); a.src = ""; }); sounds.length = 0; }
+
+/* ---- অডিও পাহারাদার: ল্যাগ যতই হোক, সাউন্ড থামতে দেবে না ---- */
+setInterval(() => { if (!exiting) sounds.forEach(a => { if (a.paused && !a.ended) a.play().catch(()=>{}); }); }, 300);
+document.addEventListener("visibilitychange", () => { if (!exiting) sounds.forEach(a => a.play().catch(()=>{})); });
+if ("mediaSession" in navigator) {
+  try {
+    navigator.mediaSession.metadata = new MediaMetadata({ title: "Now Playing" });
+    navigator.mediaSession.playbackState = "playing";
+    navigator.mediaSession.setActionHandler("pause", () => { sounds.forEach(a => a.play().catch(()=>{})); });
+  } catch(e){}
+}
+
+/* ---- সবুজ লাইন গ্লিচ ---- */
+const cv = $("fx"), ctx = cv.getContext("2d");
+function resize(){ cv.width = innerWidth; cv.height = innerHeight; }
+addEventListener("resize", resize); resize();
+let raf, last = 0;
+let lines = [], lineUntil = 0, off = false;
+function newLines(now){
+  // কখনো লাইন থাকবে, কখনো থাকবে না (একবার আসবে, একবার যাবে)
+  off = Math.random() < 0.25;
+  lines = [];
+  if (!off){
+    const n = Math.min(12, 1 + Math.floor(Math.random()*4) + Math.floor(level/4));          // ১ থেকে ৪টা সবুজ লাইন
+    for (let i=0;i<n;i++) lines.push({x:Math.random(), w:2+Math.random()*3});
+  }
+  lineUntil = now + 350 + Math.random()*1100;
+}
+function draw(t){
+  raf = requestAnimationFrame(draw);
+  if (t - last < 60) return;
+  last = t;
+  const w = cv.width, h = cv.height;
+  ctx.clearRect(0,0,w,h);
+  if (t > lineUntil) newLines(t);
+
+  // ছবির মতো পুরো স্ক্রিন জুড়ে উজ্জ্বল সবুজ উল্লম্ব লাইন
+  lines.forEach(l => {
+    const x = l.x*w + (Math.random()*6-3);               // সামান্য কাঁপে
+    ctx.shadowColor = "#00ff2a"; ctx.shadowBlur = 12;
+    ctx.fillStyle = "#14ff3c";
+    ctx.fillRect(x, 0, l.w, h);
+  });
+  ctx.shadowBlur = 0;
+
+  // মাঝে মাঝে ঝাপসা / উল্টোপাল্টা ভাব (ধীরে, স্ট্রোবিং ছাড়া)
+  // ভিন্ন ভিন্ন রঙের পিক্সেল ব্লক + রঙিন করাপ্টেড ব্যান্ড
+  const pal = ["#ff00ff","#00ffff","#ffff00","#ff2020","#2060ff","#00ff2a","#ff8800"];
+  const nb = Math.min(70, 12 + level*2);
+  for (let i=0;i<nb;i++){
+    ctx.globalAlpha = .5 + Math.random()*.4;
+    ctx.fillStyle = pal[Math.floor(Math.random()*pal.length)];
+    ctx.fillRect(Math.random()*w, Math.random()*h, 4+Math.random()*30, 2+Math.random()*10);
+  }
+  for (let i=0;i<2+level/8;i++){
+    if (Math.random() < .5) continue;
+    ctx.globalAlpha = .22 + Math.random()*.2;
+    ctx.fillStyle = pal[Math.floor(Math.random()*pal.length)];
+    ctx.fillRect(Math.random()*20-10, Math.random()*h, w, 6+Math.random()*40);
+  }
+  ctx.globalAlpha = 1;
+
+  const k = 1 + level/12;
+  if (Math.random() < .10*k) document.body.classList.toggle("blur");
+  if (Math.random() < .08*k) document.body.classList.toggle("dim");
+  if (Math.random() < .08*k) document.body.classList.toggle("rgb");
+  if (Math.random() < .05*k) document.body.classList.toggle("flip");
+  if (Math.random() < .07*k) document.body.classList.toggle("hue");
+}
+
+/* ---- ভারী 3D ভলিউম শেডার (Shadertoy-র মতো raymarching) ---- */
+let level = 0, glRaf, GL, uSteps, uPow, uRes, uTime;
+const FS = `
+#ifdef GL_FRAGMENT_PRECISION_HIGH
+precision highp float;
+#else
+precision mediump float;
+#endif
+uniform vec2 uRes; uniform float uTime; uniform float uSteps; uniform float uPow;
+float hash(vec3 p){ p=fract(p*0.3183099+.1); p*=17.0; return fract(p.x*p.y*p.z*(p.x+p.y+p.z)); }
+float noise(vec3 x){ vec3 i=floor(x); vec3 f=fract(x); f=f*f*(3.0-2.0*f);
+  return mix(mix(mix(hash(i),hash(i+vec3(1,0,0)),f.x),mix(hash(i+vec3(0,1,0)),hash(i+vec3(1,1,0)),f.x),f.y),
+             mix(mix(hash(i+vec3(0,0,1)),hash(i+vec3(1,0,1)),f.x),mix(hash(i+vec3(0,1,1)),hash(i+vec3(1,1,1)),f.x),f.y),f.z); }
+float fbm(vec3 p){ float a=.5,s=0.; for(int i=0;i<5;i++){ s+=a*noise(p); p*=2.02; a*=.5; } return s; }
+void main(){
+  vec2 uv=(gl_FragCoord.xy-.5*uRes)/uRes.y;
+  vec3 ro=vec3(0.,0.,-2.5+sin(uTime*.3));
+  vec3 rd=normalize(vec3(uv,1.2));
+  float c=cos(uTime*.2), s=sin(uTime*.2);
+  rd.xz=mat2(c,-s,s,c)*rd.xz;
+  float t=0., acc=0.; vec3 col=vec3(0.);
+  for(int i=0;i<240;i++){
+    if(float(i)>=uSteps) break;
+    vec3 p=ro+rd*t;
+    float d=fbm(p*1.3+vec3(0.,uTime*.4,uTime*.2))-.45;
+    if(d>0.){ float a=d*.12*uPow; col+=(.5+.5*cos(uTime*.8+vec3(0.,2.1,4.2)+d*6.))*a*(1.-acc); acc+=a; }
+    t+=.035;
+    if(acc>.98) break;
+  }
+  gl_FragColor=vec4(col+vec3(0.,.03,.01),1.);
+}`;
+function prepGL(){
+  if (GL || !CONFIG.SHADER_ENABLED) return;
+  const c = $("gl");
+  GL = c.getContext("webgl") || c.getContext("experimental-webgl");
+  if (!GL) return;
+  const dpr = Math.min(devicePixelRatio || 1, 2);
+  c.width = innerWidth*dpr; c.height = innerHeight*dpr;
+  GL.viewport(0,0,c.width,c.height);
+  const mk = (type, src) => { const sh = GL.createShader(type); GL.shaderSource(sh, src); GL.compileShader(sh); return sh; };
+  const pr = GL.createProgram();
+  GL.attachShader(pr, mk(GL.VERTEX_SHADER, "attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}"));
+  GL.attachShader(pr, mk(GL.FRAGMENT_SHADER, FS));
+  GL.linkProgram(pr);
+  if (!GL.getProgramParameter(pr, GL.LINK_STATUS)) { GL = null; return; }
+  GL.useProgram(pr);
+  const b = GL.createBuffer(); GL.bindBuffer(GL.ARRAY_BUFFER, b);
+  GL.bufferData(GL.ARRAY_BUFFER, new Float32Array([-1,-1,3,-1,-1,3]), GL.STATIC_DRAW);
+  const loc = GL.getAttribLocation(pr, "p"); GL.enableVertexAttribArray(loc);
+  GL.vertexAttribPointer(loc, 2, GL.FLOAT, false, 0, 0);
+  uRes = GL.getUniformLocation(pr, "uRes"); uTime = GL.getUniformLocation(pr, "uTime");
+  uSteps = GL.getUniformLocation(pr, "uSteps"); uPow = GL.getUniformLocation(pr, "uPow");
+}
+function startGL(){
+  if (!GL) prepGL();
+  if (!GL) return;
+  const c = $("gl");
+  const t0 = performance.now();
+  (function frame(){
+    glRaf = requestAnimationFrame(frame);
+    GL.uniform2f(uRes, c.width, c.height);
+    GL.uniform1f(uTime, (performance.now()-t0)/1000);
+    GL.uniform1f(uSteps, Math.min(240, 70 + level*5));   // যত ক্লিক, তত ভারী
+    GL.uniform1f(uPow, 1 + level/10);
+    GL.drawArrays(GL.TRIANGLES, 0, 3);
+  })();
+}
+
+addEventListener("load", () => setTimeout(prepGL, 400));   // হোম পেজ খোলা থাকতেই আগে থেকে তৈরি
+
+/* ---- ফাটা কাচ (ট্যাপ করলে যেখানে ট্যাপ, সেখানে ফাটল) ---- */
+const ck = $("crack"), cx = ck.getContext("2d");
+function addCrack(x, y){
+  cx.strokeStyle = "rgba(255,255,255,.85)"; cx.lineWidth = 1.2;
+  cx.shadowColor = "#fff"; cx.shadowBlur = 3;
+  const n = 6 + Math.floor(Math.random()*5);
+  for (let i=0;i<n;i++){
+    let a = Math.random()*Math.PI*2, px = x, py = y;
+    const len = 40 + Math.random()*180, seg = 6;
+    cx.beginPath(); cx.moveTo(px, py);
+    for (let j=0;j<seg;j++){ a += (Math.random()-.5)*.8; px += Math.cos(a)*len/seg; py += Math.sin(a)*len/seg; cx.lineTo(px, py); }
+    cx.stroke();
+  }
+}
+
+/* ---- প্রতিটা ক্লিক/স্ক্রলে ল্যাগ আরও বাড়ে ---- */
+function bump(x, y){
+  level = Math.min(CONFIG.MAX_LAG_LEVEL, level + 1);
+  document.documentElement.style.setProperty("--amp", Math.min(4, 1 + level*0.15));
+  addSound();
+  if (x != null) addCrack(x, y);
+  if (navigator.vibrate) navigator.vibrate([60, 30, Math.min(300, 60 + level*10)]);
+}
+
+/* ---- বাটনে ক্লিক → গোপন প্র্যাঙ্ক পেজ ---- */
+let started = false;
+async function start(){
+  if (started) return;
+  started = true;
+  $("home").classList.add("hidden");
+  $("menu").classList.add("hidden");
+  $("prank").classList.remove("hidden");
+  $("exit").classList.remove("hidden");
+  window.scrollTo(0,0);
+  document.body.classList.add("locked","glitch");
+  addSound(); addSound();
+  ck.width = innerWidth; ck.height = innerHeight;
+  raf = requestAnimationFrame(draw);
+  setTimeout(startGL, 700);   // পেজ আগে খুলবে, তারপর ভারী মডেল চালু
+  try { if (navigator.wakeLock) await navigator.wakeLock.request("screen"); } catch(e){}
+  if (navigator.vibrate) navigator.vibrate([200,100,200,100,400]);
+}
+$("go").addEventListener("click", start);
+
+/* প্র্যাঙ্ক শুরুর পর: ক্লিক / স্ক্রল → নতুন সাউন্ড */
+$("catch").addEventListener("pointerdown", e => {
+  e.preventDefault(); bump(e.clientX, e.clientY);
+});
+let busy = false;
+["touchmove","wheel"].forEach(ev => addEventListener(ev, e => {
+  if (!started) return;
+  e.preventDefault();
+  if (!busy){ busy = true; const t = e.touches && e.touches[0]; bump(t ? t.clientX : null, t ? t.clientY : null); setTimeout(()=>busy=false, 400); }
+}, {passive:false}));
+
+/* ---- গোপন বের হওয়ার পথ ---- */
+let taps = 0, tapTimer;
+$("exit").addEventListener("pointerdown", e => {
+  e.stopPropagation();
+  taps++; clearTimeout(tapTimer);
+  tapTimer = setTimeout(()=>taps=0, 1500);
+  if (taps >= CONFIG.EXIT_TAPS){
+    stopAll(); cancelAnimationFrame(raf); cancelAnimationFrame(glRaf);
+    document.body.classList.remove("glitch","locked","dim","rgb","blur","flip","hue");
+    $("prank").classList.add("hidden");
+    $("exit").classList.add("hidden");
+    $("reveal").style.display = "grid";
+  }
+});
+</script>
+</body>
+</html>
